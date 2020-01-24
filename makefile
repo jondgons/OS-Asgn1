@@ -13,7 +13,10 @@ CFLAGS=-c -Wall $(DEBUG)
 all: $(TARGET)
 
 $(TARGET): shell.o
-	$(CC) shell.o -0 $(TARGET)
-	
+	$(CC) shell.o -o $(TARGET)
+
 shell.o: shell.c
 	$(CC) $(CFLAGS) shell.c
+
+clean:
+	rm *.o *~ $(TARGET)
