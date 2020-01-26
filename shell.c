@@ -6,24 +6,32 @@
 
 #define MAX_INT 2147483647
 
-char* ParseBatch(char*, char**);
+int SIZE = 150;
+
+char** ParseBatch(char**, char**);
 
 int main (int argc, char* argv[]){
   
   if(argc == 2){
     
     FILE *fptr = NULL;
-    //char commandStr[];
-    char* commandStr = (char*) malloc(150*sizeof(char*));
-    char** commandArr = (char**) malloc(15*150*sizeof(char));
-    fptr = fopen(argv[1], "r");
-  
-    if(fptr != NULL){
+    char** commandArr = (char**) malloc(SIZE*SIZE*sizeof(char));
+    char** commandStr = (char**) malloc(SIZE*SIZE*sizeof(char));
+    char** args;
+    char tmp[SIZE];// Don't like doing this so probably optimize later.
 
-      fgets(commandStr, MAX_INT, fptr);
+    fptr = fopen(argv[1], "r");
+
+    if(fptr != NULL){
+      fgets(tmp, MAX_INT, fptr);
+      commandStr[0] = tmp;
+      int i = 0;
+      while(fgets(tmp, MAX_INT, fptr) != NULL){
+	i+=1;
+	commandStr[i] = tmp;
+      }
       
-      ParseBatch(commandStr, commandArr);
-      
+      args = ParseBatch(commandArr, commandStr);
       /*for(int i = 0; commandArr[i] != EOF; i++){
 	if(fork() == 0){
 	  execvp(commandArr[i]);
@@ -34,7 +42,9 @@ int main (int argc, char* argv[]){
 	}*/
     }
     fclose(fptr);
+    free(args);
     free(commandArr);
+    free(commandStr);
   }
   /*else{
     
@@ -62,33 +72,64 @@ int main (int argc, char* argv[]){
   return(0);
 }
 
-char* ParseBatch(char* commands, char** commandList){
+char** ParseBatch(char** commandList, char** commands){
 
-  char tmp[2] = ";";
-  char* token = (char*) malloc(150*sizeof(char));
+  char ** args = (char**) malloc(SIZE*SIZE*sizeof(char));
+  char tmp[2] = "\n";
+  char* token;
+  char** commandSplitting = (char**) malloc(SIZE*SIZE*sizeof(char));
 
-  token = strtok(commands, tmp);
+  token = strtok((char*) commands[0], tmp);
   commandList[0] = token;
-  
+  //printf("split by endline %s\n", commandList[0]);
   int i = 0;
   while(token != NULL){
     i++;
     token = strtok(NULL, tmp);
-    commandList[i] = token;
+    commandList[i] = token + '\0';
+    //printf("split by endline %s\n", commandList[i]);
   }
-  commandList[i+1] = "\0";
-  char tmp2[2];
-  int len;/*Current problem: Outer for loop runs too long.*/
-  for(int x = 0; commandList[x][0] != '\0'; x+=1){
-    printf("x %d\n", x);
-    len = strlen(commandList[x]);
-    for(int y = 0; y < len && y+1 < len && len >= 2; y+=2){
-      tmp[0] = commandList[x][y];
-      tmp[1] = commandList[x][y+1];
-      if(strcmp(tmp, "./") == 0){
-	printf("found exe\n");
-      }printf("y %d\n", y);
-    }printf("next it\n");
-  }printf("congrats! Left\n");
+  tmp[0] = ';';
+  token = strtok((char*) commandList[0], tmp);
+  commandSplitting[0] = token;
+  //printf("\nSplitting by ; %s\n", commandSplitting[0]);
+  i = 0;
+  while(token != NULL){
+
+    i+=1;
+    token = strtok(NULL, tmp);
+    commandSplitting[i] = token;
+    //printf("Splitting by ; %s\n", commandSplitting[i]);
+  }
+  
+  tmp[0] = ' ';
+  int elemCount = i;
+  int count = 0;
+  //printf("\n\ncommandSplitting %s\n", commandSplitting[0]);
+  i = 0;
+  //printf("elemCount %d\n", elemCount);
+  for(int x = 0; x < elemCount; x++){
+    token = strtok(commandSplitting[x], tmp);
+    args[count] = token;
+    //printf("token %s\n", token);
+    //printf("count %d\n",count);
+    //printf("\nSplitting by <space> %s\n", args[count]);
+    count += 1;
+    while(token != NULL){
+      
+      i+=1;
+      token = strtok(NULL, tmp);
+      //printf("token %s\n",token);
+      args[count] = token;
+      count += 1;
+      //printf("Splitting by <space> %s\n", args[count]);
+    }
+  }
+  /*for(int j = 0; j < 10; j++)
+    printf("args %s\n", args[j]);*/
+  //printf("congrats! Left\n");
   free(token);
+  free(commandSplitting);
+ 
+  return(args);
 }
