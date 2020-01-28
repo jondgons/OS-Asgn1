@@ -9,7 +9,7 @@
 int SIZE = 150;
 
 char** ParseBatch(char*);
-/*TODO: Have to add null character to strings*/
+
 int main (int argc, char* argv[]){
   
   //execvp(NULL, h);
@@ -20,17 +20,18 @@ int main (int argc, char* argv[]){
     char** commandStr = (char**) malloc(SIZE*SIZE*sizeof(char));
     char** args;
     char tmp[SIZE];// Don't like doing this so probably optimize later.
-    int err = 0;
-    char** command = malloc(SIZE*SIZE*sizeof(char));
+
     
     fptr = fopen(argv[1], "r");
 
     if(fptr != NULL){
+
       fgets(tmp, MAX_INT, fptr);
       commandStr[0] = tmp;
 
       int i = 0;
       while(fgets(tmp, MAX_INT, fptr) != NULL){
+
 	i+=1;
 	commandStr[i] = tmp;
       }
@@ -44,30 +45,68 @@ int main (int argc, char* argv[]){
 	commandStr[i] = token;
       }
       
-      character[0] = ';';
-      token = strtok((char*) commandStr[0], character);
+
+      char* token;
+      char character[2] = "\n";
+      
+      //printf("splitting by newline %s\n", commandStr[0]);
+
+      token = strtok(commandStr[0], character);
       commandStr[0] = token;
-      i = 1;
+      
+      i = 0;
       while(token != NULL){
-        token = strtok(NULL, character);
-        commandStr[i] = token;//printf("command %s\n\n", commandStr[i]);
+
+	i += 1;
+	token = strtok(NULL, tmp);
+	commandStr[i] = token;
+      }
+
+      //printf("finished splitting by newline\n");
+
+      character[0] = ';';
+      token = strtok(commandStr[0], character);
+      commandArr[0] = token;
+
+      i = 0;
+      while(token != NULL){
+
+	i += 1;
+	token = strtok(NULL, tmp);
+	commandArr[i] = token;
+      }
+      
+      //printf("started parsing %s\n", commandArr[0]);
+      args = ParseBatch(commandArr[0]);
+      //printf("finished parsing %s\n", commandArr[0]);
+
+      int err = 0;
+      if(fork() == 0){
+	char CHAR[][];
+	printf("forking\n");
+	err = execvp(args[0], args);
+	
+      }
+      if(err != 0){
+	printf("execution failed");
+      }
+      i = 0;
+      while(token != NULL){
+	
+	token = strtok(NULL, character);
+	commandArr[i] = token;
+
+	if(commandArr[i] != NULL)
+	  args = ParseBatch(commandArr[i]);
+
+	if(fork() == 0){
+	  //printf("forking\n");
+	  //printf("args %s %s\n", args[0], args[1]);
+	}
 	i += 1;
       }
-    
-      int iterator = 0;
-      for(int k = 0; k < SIZE; k++){//args may literally be NULL at some points
-	//printf("num %s\n",commandStr[k]);
-	if(commandStr[k] != NULL){
-	  args = ParseBatch(commandStr[k]);
-	  printf("not null %s\n", args[0]);
-	}
-	
-	//printf("parsed\n");
-	//for(i = 0; i < SIZE; i++)
-	//printf("command %s %d\n", args[i], i);
-      }
-    
-      printf("exit");
+      
+
     }
     fclose(fptr);
     free(args);
@@ -80,27 +119,28 @@ int main (int argc, char* argv[]){
   return(0);
 }
 
-char** ParseBatch(char* commands){printf("enters\n");
-  //printf("check %d\n",strcmp(commands, ""));
-  if(commands != NULL){printf("parsing because true\n");//strcmp(commands, "") != 0){
-    //char ** args = (char**) malloc(SIZE*SIZE*sizeof(char));
-    char tmp[2] = "\n";
-    char* token;
-    char** commandSplitting = (char**) malloc(SIZE*SIZE*sizeof(char));
-    
-    tmp[0] = ' ';
-    int count = 0;
-    
-    int i = 1;
-    token = strtok((char*) commands, tmp);
-    commandSplitting[0] = token;
-    while(token != NULL){
-      
-      token = strtok(NULL, tmp);
-      commandSplitting[i] = token;
-      i++;
-    }
-    return(commandSplitting);
+
+char** ParseBatch(char* commands){
+
+  char ** args = (char**) malloc(SIZE*SIZE*sizeof(char));
+  char tmp[2];
+  char* token;
+  
+  tmp[0] = ' ';
+  token = strtok(commands, tmp);
+  args[0] = token;
+
+  int i = 0;
+  while(token != NULL){
+
+    i += 1;
+    token = strtok(NULL, tmp);
+    args[i] = token;
   }
-  return(NULL);
+  args[i+1] = NULL;
+  //printf("check %s\n", args[i+1]);  
+  free(token);
+  
+  return(args);
+
 }
