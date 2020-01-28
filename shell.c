@@ -12,6 +12,7 @@ char** ParseBatch(char*);
 
 int main (int argc, char* argv[]){
   
+  //execvp(NULL, h);
   if(argc == 2){
     
     FILE *fptr = NULL;
@@ -19,6 +20,7 @@ int main (int argc, char* argv[]){
     char** commandStr = (char**) malloc(SIZE*SIZE*sizeof(char));
     char** args;
     char tmp[SIZE];// Don't like doing this so probably optimize later.
+
     
     fptr = fopen(argv[1], "r");
 
@@ -33,7 +35,17 @@ int main (int argc, char* argv[]){
 	i+=1;
 	commandStr[i] = tmp;
       }
+      char character[2] = "\n";
+      char* token = strtok((char*) commandStr[0], character);
+     
+      commandStr[0] = token;
+      i = 1;
+      while(token != NULL){
+	token = strtok(NULL, character);
+	commandStr[i] = token;
+      }
       
+
       char* token;
       char character[2] = "\n";
       
@@ -94,16 +106,19 @@ int main (int argc, char* argv[]){
 	i += 1;
       }
       
+
     }
     fclose(fptr);
     free(args);
     free(commandArr);
     free(commandStr);
+    free(command);
   }
   else
     printf("file pointer null\n");
   return(0);
 }
+
 
 char** ParseBatch(char* commands){
 
@@ -127,4 +142,5 @@ char** ParseBatch(char* commands){
   free(token);
   
   return(args);
+
 }
