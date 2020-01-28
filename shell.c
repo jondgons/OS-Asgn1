@@ -8,7 +8,7 @@
 
 int SIZE = 150;
 
-char** ParseBatch(char**, char**);
+char** ParseBatch(char*);
 
 int main (int argc, char* argv[]){
   
@@ -19,117 +19,112 @@ int main (int argc, char* argv[]){
     char** commandStr = (char**) malloc(SIZE*SIZE*sizeof(char));
     char** args;
     char tmp[SIZE];// Don't like doing this so probably optimize later.
-
+    
     fptr = fopen(argv[1], "r");
 
     if(fptr != NULL){
+
       fgets(tmp, MAX_INT, fptr);
       commandStr[0] = tmp;
+
       int i = 0;
       while(fgets(tmp, MAX_INT, fptr) != NULL){
+
 	i+=1;
 	commandStr[i] = tmp;
       }
       
-      args = ParseBatch(commandArr, commandStr);
-      /*for(int i = 0; commandArr[i] != EOF; i++){
+      char* token;
+      char character[2] = "\n";
+      
+      //printf("splitting by newline %s\n", commandStr[0]);
+
+      token = strtok(commandStr[0], character);
+      commandStr[0] = token;
+      
+      i = 0;
+      while(token != NULL){
+
+	i += 1;
+	token = strtok(NULL, tmp);
+	commandStr[i] = token;
+      }
+
+      //printf("finished splitting by newline\n");
+
+      character[0] = ';';
+      token = strtok(commandStr[0], character);
+      commandArr[0] = token;
+
+      i = 0;
+      while(token != NULL){
+
+	i += 1;
+	token = strtok(NULL, tmp);
+	commandArr[i] = token;
+      }
+      
+      //printf("started parsing %s\n", commandArr[0]);
+      args = ParseBatch(commandArr[0]);
+      //printf("finished parsing %s\n", commandArr[0]);
+
+      int err = 0;
+      if(fork() == 0){
+	char CHAR[][];
+	printf("forking\n");
+	err = execvp(args[0], args);
+	
+      }
+      if(err != 0){
+	printf("execution failed");
+      }
+      i = 0;
+      while(token != NULL){
+	
+	token = strtok(NULL, character);
+	commandArr[i] = token;
+
+	if(commandArr[i] != NULL)
+	  args = ParseBatch(commandArr[i]);
+
 	if(fork() == 0){
-	  execvp(commandArr[i]);
+	  //printf("forking\n");
+	  //printf("args %s %s\n", args[0], args[1]);
 	}
-	else{
-	  wait();
-	}
-	}*/
+	i += 1;
+      }
+      
     }
     fclose(fptr);
     free(args);
     free(commandArr);
     free(commandStr);
   }
-  /*else{
-    
-    int check = 0;
-    int err = 0;
-    char *command = (char*) malloc(MAX_INT*sizeof(char));
-    while(check == 0){
-      
-      printf("INPUT: ");
-      fgets(command, MAX_INT, stdin);
-
-      if(strcmp(command, "quit") == 0){
-	check = 1;
-      }
-      else{
-	//err = system(command);
-	if(err = -1){
-	  check = 1;
-	}
-      }
-    }
-    }*/
   else
     printf("file pointer null\n");
   return(0);
 }
 
-char** ParseBatch(char** commandList, char** commands){
+char** ParseBatch(char* commands){
 
   char ** args = (char**) malloc(SIZE*SIZE*sizeof(char));
-  char tmp[2] = "\n";
+  char tmp[2];
   char* token;
-  char** commandSplitting = (char**) malloc(SIZE*SIZE*sizeof(char));
-
-  token = strtok((char*) commands[0], tmp);
-  commandList[0] = token;
-  //printf("split by endline %s\n", commandList[0]);
-  int i = 0;
-  while(token != NULL){
-    i++;
-    token = strtok(NULL, tmp);
-    commandList[i] = token + '\0';
-    //printf("split by endline %s\n", commandList[i]);
-  }
-  tmp[0] = ';';
-  token = strtok((char*) commandList[0], tmp);
-  commandSplitting[0] = token;
-  //printf("\nSplitting by ; %s\n", commandSplitting[0]);
-  i = 0;
-  while(token != NULL){
-
-    i+=1;
-    token = strtok(NULL, tmp);
-    commandSplitting[i] = token;
-    //printf("Splitting by ; %s\n", commandSplitting[i]);
-  }
   
   tmp[0] = ' ';
-  int elemCount = i;
-  int count = 0;
-  //printf("\n\ncommandSplitting %s\n", commandSplitting[0]);
-  i = 0;
-  //printf("elemCount %d\n", elemCount);
-  for(int x = 0; x < elemCount; x++){
-    token = strtok(commandSplitting[x], tmp);
-    args[count] = token;
-    //printf("token %s\n", token);
-    //printf("count %d\n",count);
-    //printf("\nSplitting by <space> %s\n", args[count]);
-    count += 1;
-    while(token != NULL){
-      
-      i+=1;
-      token = strtok(NULL, tmp);
-      //printf("token %s\n",token);
-      args[count] = token;
-      count += 1;
-      //printf("Splitting by <space> %s\n", args[count]);
-    }
+  token = strtok(commands, tmp);
+  args[0] = token;
+
+  int i = 0;
+  while(token != NULL){
+
+    i += 1;
+    token = strtok(NULL, tmp);
+    args[i] = token;
   }
-  /*for(int j = 0; j < 10; j++)
-    printf("args %s\n", args[j]);*/
-  //printf("congrats! Left\n");
+  args[i+1] = NULL;
+  //printf("check %s\n", args[i+1]);  
   free(token);
-  free(commandSplitting);
- 
+  
   return(args);
 }
