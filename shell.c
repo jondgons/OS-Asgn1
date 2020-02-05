@@ -19,10 +19,8 @@ int main (int argc, char* argv[]){
     struct QueuePid* queuePid = (struct QueuePid*) malloc(sizeof(struct QueuePid));
     FILE *fptr = NULL;
     char** commandArr;
-    char commandStr[SIZE]; //= (char*) malloc(SIZE*sizeof(char));//commandStr[SIZE]
+    char commandStr[SIZE];
     char** args;
-    char tmp[SIZE];
-    int i = 0;
     int err = 0;
     int* count = (int*) malloc(sizeof(int));
     
@@ -30,16 +28,18 @@ int main (int argc, char* argv[]){
 
     if(fptr != NULL){
       /*PROBLEM: On bad input still prints the next command twice.*/
+      
       while(fgets(commandStr, SIZE-1, fptr) != NULL){
-	i+=1;//printf("String %s\n", commandStr);
+       
 	commandArr = ParseByNewlineSemiColon(count, commandStr);
-
+	
 	for(int j = 0; j < *count; j++){
-	  //printf("\n\nPreparing to execute command: %s\n\n", commandArr[j]);
+ 	  
+	  printf("\n\nPreparing to execute command: %s\n\n", commandArr[j]);
 	  args = ParseBySpace(commandArr[j]);
 	  push(queue, args);
 	}
-	//i = 1;
+        
 	char** arguments;
         
 	pid_t* pid = (pid_t*) malloc(sizeof(pid_t));
@@ -48,37 +48,33 @@ int main (int argc, char* argv[]){
 	  arguments = pop(queue);
 	  
 	  if((*pid = fork()) == 0){
-	    
-	    err = execvp(arguments[0], arguments);printf("err %d\n", err);
-	  }
+	    err = execvp(arguments[0], arguments);
+	  }	
 	  if(err == -1){
-	    printf("\nCommand execution failed.\n");
+	    printf("\nA command does not exist or cannot be executed.\n");
 	    exit(0);
 	  }
 
 	  if(err == 0){
 	    
-	    pushPid(queuePid, pid);//printf("Pid growth %d\n", queuePid->size);
+	    pushPid(queuePid, pid);
 	    pid = (pid_t*) malloc(sizeof(pid_t));
 	  }
 	  else{
 	    err = 0;
 	  }
-	  //i += 1;
 	}
-	while(queuePid->size != 0){printf("\npid dec %d\n", queuePid->size);
+	while(queuePid->size != 0){
 	  waitpid(*popPid(queuePid), &stat, 0);
-	}//printf("string2 %s\n", commandStr);
-      }//printf("iteration %d\n", i);
+	}
+      }
     }
-    //free(pid);
     free(queuePid);
     fclose(fptr);
     free(args);
     free(commandArr);
     free(count);
     free(queue);
-    //free(commandStr);
     
     exit(0);
   }
@@ -100,7 +96,7 @@ int main (int argc, char* argv[]){
     while(cont == 0){
       
       fgets(userInput, SIZE-1, stdin);
-      //printf("user input %s check", userInput);
+      
       if(strcmp(userInput, "quit\n") == 0 || strcmp(userInput, "Quit\n") == 0
 	 || strcmp(userInput, "q\n") == 0 || strcmp(userInput, "Q\n") == 0){
 	
@@ -117,29 +113,28 @@ int main (int argc, char* argv[]){
 
       char** arguments;
       while(queue->size != 0){
-	//printf("args  size %d\n", /*arguments[0],*/ queue->size);
+	
 	arguments = pop(queue);
         
-	if(*pid = fork() == 0){
-	  err = execvp(arguments[0], arguments);//printf("\n\nexited fork %d \n\n", err);
+	if((*pid = fork()) == 0){
+	  err = execvp(arguments[0], arguments); 
 	}
 	if(err == -1){
-	  printf("\nCommand execution failed.\n");
+	  printf("\nA command does not exist or cannot be executed.\n");
 	  exit(0);
-	  //err = 0;
 	}
 
 	if(err == 0){
 	  
-	  pushPid(queuePid, pid);//printf("\npid growth %d\n",queuePid->size);
+	  pushPid(queuePid, pid);
 	  pid = (pid_t*) malloc(sizeof(pid_t));
 	}
 	else{
 	  err = 0;
 	}
       }
-      int stat;//printf("\n\nFinicshed starting commands.\n\n");
-      while(queuePid->size != 0){//printf("pid queue size %d\n", queuePid->size);
+      int stat;
+      while(queuePid->size != 0){
 	waitpid(*popPid(queuePid), &stat, 0);
       }
       printf("\nINPUT: ");

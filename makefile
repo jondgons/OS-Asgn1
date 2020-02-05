@@ -12,11 +12,13 @@ CFLAGS=-c -Wall $(DEBUG)
 
 all: $(TARGET)
 
-$(TARGET): shell.o
-	$(CC) shell.o -o $(TARGET)
+$(TARGET): shell.o Queue.o
+	$(CC) -o $(TARGET) shell.o Queue.o
 
-shell.o: shell.c
+shell.o: shell.c Queue.h GlobalVars.txt
 	$(CC) $(CFLAGS) shell.c
 
+Queue.o: Queue.c Queue.h GlobalVars.txt
+	$(CC) $(CFLAGS) Queue.c
 clean:
 	rm *.o *~ $(TARGET)
