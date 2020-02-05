@@ -1,3 +1,9 @@
+/*Ethan Seiber & Cody
+ *File: shell.c
+ *Date: 04/02/2020
+ *Description: This is a shell that will execute any commands if they exist.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,13 +14,29 @@
 #include "GlobalVars.txt"
 #include "Queue.h"
 
+/*Function: ParseByNewlineSemiColon
+ *This function will take an int as a parameter to count the number of commands
+ *to be executed concurrently. It will also take a c-string and return a 2D
+ *char array where each 2nd dimension index is a c-string with a command.
+ */
 char** ParseByNewlineSemiColon(int*, char*);
+
+/*Function: ParseBySpace
+ *This function takes a c-string and will tokenize it using the regular 
+ *expression space. It returns a 2D char array where each each 2nd dimension
+ *index is a c-string with a command or command options.
+ */
 char** ParseBySpace(char*);
 
 int main (int argc, char* argv[]){
   
   if(argc == 2){
-
+    /*This is the code for batch mode. It will open the file passed in and read
+     *the commands from the file and execute them. It uses queues to store 
+     *commands to be executed. This allows them to be executed concurrently. 
+     *Problem: If a command is mis-typed then this will cause problems for the
+     *shell.
+     */ 
     struct Queue *queue = (struct Queue*) malloc(sizeof(struct Queue));
     struct QueuePid* queuePid = (struct QueuePid*) malloc(sizeof(struct QueuePid));
     FILE *fptr = NULL;
@@ -27,7 +49,6 @@ int main (int argc, char* argv[]){
     fptr = fopen(argv[1], "r");
 
     if(fptr != NULL){
-      /*PROBLEM: On bad input still prints the next command twice.*/
       
       while(fgets(commandStr, SIZE-1, fptr) != NULL){
        
@@ -80,7 +101,11 @@ int main (int argc, char* argv[]){
   }
 
   else{
-
+    /*This is for the interactive mode portion of the assignment. It takes 
+     *input from the user and if it is a valid command will execute it. This 
+     *mode also uses queues for command execution. This again will allow for 
+     *concurrent executions of commands.
+     */
     struct Queue* queue = (struct Queue*) malloc(sizeof(struct Queue));
     struct QueuePid* queuePid = (struct QueuePid*) malloc(sizeof(struct Queue));
     pid_t* pid = (pid_t*) malloc(sizeof(pid_t));
@@ -163,11 +188,9 @@ char** ParseByNewlineSemiColon(int* count, char* commands){
     commandList[i] = token;
     i += 1;
   }
-  /*for(int x = 0; x < i; x++)
-    Mark(commands);*/
+
   character[0] = ';';
-  //token = strtok(commands, character);
-  //args[0] = token;
+
   i = 1;
     token = strtok(commandList[0], character);
     args[0] = token;
@@ -179,11 +202,10 @@ char** ParseByNewlineSemiColon(int* count, char* commands){
       i += 1;
       *count += 1;
     }
-    //}
   
   free(commandList);
   free(token);
-  //printf("cj %s\n",args[0]);
+
   return(args);
 }
 char** ParseBySpace(char* commands){
@@ -204,7 +226,6 @@ char** ParseBySpace(char* commands){
     token = strtok(NULL, tmp);
     args[i] = token;
   }
-  //args[i+1] = NULL;
     
   free(token);
   
