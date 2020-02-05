@@ -58,6 +58,10 @@ int main (int argc, char* argv[]){
  	  
 	  printf("\n\nPreparing to execute command: %s\n\n", commandArr[j]);
 	  args = ParseBySpace(commandArr[j]);
+
+	  /*This function will push the c-string into a queue for concurrent
+	   *execution of commands.
+	   */
 	  push(queue, args);
 	}
         
@@ -77,7 +81,11 @@ int main (int argc, char* argv[]){
 	  }
 
 	  if(err == 0){
-	    
+
+	    /*This function will push the child process identifier into a queue
+	     *that will be used to wait for the completion of the child 
+	     *processes
+	     */
 	    pushPid(queuePid, pid);
 	    pid = (pid_t*) malloc(sizeof(pid_t));
 	  }
@@ -86,6 +94,8 @@ int main (int argc, char* argv[]){
 	  }
 	}
 	while(queuePid->size != 0){
+	  /*This loop will execute waitpid for all queued child processes.
+	   */
 	  waitpid(*popPid(queuePid), &stat, 0);
 	}
       }
@@ -133,7 +143,11 @@ int main (int argc, char* argv[]){
       for(int j = 0; j < *count; j++){
 	printf("Preparing to execute command: %s\n", commandList[j]);
 	args = ParseBySpace(commandList[j]);                             
-        push(queue, args);
+
+	/*This function is pushing commands into a queue in order for concurrent
+	 *execution of commands to be possible.
+	 */
+	push(queue, args);
       }
 
       char** arguments;
@@ -150,7 +164,10 @@ int main (int argc, char* argv[]){
 	}
 
 	if(err == 0){
-	  
+
+	  /*This function pushes the identifiers for child processes into a 
+	   *to be used with a wait system call.
+	   */
 	  pushPid(queuePid, pid);
 	  pid = (pid_t*) malloc(sizeof(pid_t));
 	}
@@ -160,6 +177,9 @@ int main (int argc, char* argv[]){
       }
       int stat;
       while(queuePid->size != 0){
+
+	/*This function will call wait for each child process that was created
+	 */
 	waitpid(*popPid(queuePid), &stat, 0);
       }
       printf("\nINPUT: ");
@@ -173,7 +193,11 @@ int main (int argc, char* argv[]){
 }
 
 char** ParseByNewlineSemiColon(int* count, char* commands){
-  
+  /*As explained earlier this function will tokenize a c-string by newline and
+   *semicolon characters. It will also count the number of commands to be 
+   *executed concurrently. This function returns the tokenized string in the 
+   *form of a 2D char array.
+   */
   char* token;
   char character[2] = "\n";
   char** args = (char**) malloc(SIZE*SIZE*sizeof(char));
@@ -210,6 +234,9 @@ char** ParseByNewlineSemiColon(int* count, char* commands){
 }
 char** ParseBySpace(char* commands){
 
+  /*This function takes a c-string and tokenizes it by the space character. It 
+   *returns the tokens in the form of a 2D char array.
+   */
   char ** args = (char**) malloc(SIZE*SIZE*sizeof(char));
   char tmp[2];
   char* token;
